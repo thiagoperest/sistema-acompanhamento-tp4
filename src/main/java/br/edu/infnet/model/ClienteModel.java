@@ -3,6 +3,7 @@ package br.edu.infnet.model;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.io.*;
 
 public class ClienteModel extends Model<ClienteModel> {
     private String nome;
@@ -62,6 +63,51 @@ public class ClienteModel extends Model<ClienteModel> {
         return cliente.getId();
     }
 
+    public void update(ClienteModel clienteAtualizado) {
+        this.nome = clienteAtualizado.nome;
+        this.email = clienteAtualizado.email;
+        this.senha = clienteAtualizado.senha;
+        this.telefone = clienteAtualizado.telefone;
+        this.endereco = clienteAtualizado.endereco;
+        this.updatedAt = LocalDateTime.now();
+
+        List<ClienteModel> todos = findAll();
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFileName))) {
+            writer.write("id;createdAt;updatedAt;nome;email;senha;telefone;endereco");
+            writer.newLine();
+
+            for (ClienteModel cliente : todos) {
+                if (cliente.getId().equals(this.id)) {
+                    writer.write(this.toCsv());
+                } else {
+                    writer.write(cliente.toCsv());
+                }
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao atualizar arquivo CSV: " + e.getMessage(), e);
+        }
+    }
+
+    public void delete(Long id) {
+        List<ClienteModel> todos = findAll();
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFileName))) {
+            writer.write("id;createdAt;updatedAt;nome;email;senha;telefone;endereco");
+            writer.newLine();
+
+            for (ClienteModel cliente : todos) {
+                if (!cliente.getId().equals(id)) {
+                    writer.write(cliente.toCsv());
+                    writer.newLine();
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao deletar do arquivo CSV: " + e.getMessage(), e);
+        }
+    }
+
     public boolean autenticar(String email, String senha) {
         return this.email != null && this.senha != null &&
                 this.email.equals(email) && this.senha.equals(senha);
@@ -113,6 +159,14 @@ public class ClienteModel extends Model<ClienteModel> {
 
     public void setEndereco(String endereco) {
         this.endereco = endereco;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     @Override
