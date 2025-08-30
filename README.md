@@ -33,6 +33,15 @@ Data Layer (CSV Files)
 
 O sistema foi modelado seguindo princípios de orientação a objetos, com separação de responsabilidades entre as camadas de apresentação, controle, negócio e persistência.
 
+### Diagramas de Sequência
+
+#### UC02 - Registrar Novo Cliente
+![Diagrama de Sequência para UC02 - Registrar Novo Cliente](./docs/diagrama-de-sequencia-UC02-registrar-novo-cliente.png)
+#### UC01 - Fazer Login
+![Diagrama de Sequência para UC01 - Fazer Login](./docs/diagrama-de-sequencia-UC01-fazer-login.png)
+#### UC05 - Atualizar Dados
+![Diagrama de Sequência para UC05 - Atualizar Dados](./docs/diagrama-de-sequência-UC05-atualizar-dados.png)
+
 ## Funcionalidades Implementadas
 
 - **Sistema de Login/Logout** - Autenticação de clientes via email e senha
