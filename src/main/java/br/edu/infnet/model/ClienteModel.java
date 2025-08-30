@@ -41,18 +41,28 @@ public class ClienteModel extends Model<ClienteModel> {
 
     @Override
     public ClienteModel fromCsv(String csvLine) {
-        String[] fields = csvLine.split(";");
+        if (csvLine == null || csvLine.trim().isEmpty()) {
+            return null;
+        }
+
+        String[] fields = csvLine.split(";", -1);
         ClienteModel cliente = new ClienteModel();
 
-        if (fields.length >= 8) {
-            cliente.id = fields[0].isEmpty() ? null : Long.parseLong(fields[0]);
-            cliente.createdAt = fields[1].isEmpty() ? null : LocalDateTime.parse(fields[1], DATE_FORMATTER);
-            cliente.updatedAt = fields[2].isEmpty() ? null : LocalDateTime.parse(fields[2], DATE_FORMATTER);
-            cliente.nome = fields[3].isEmpty() ? null : fields[3];
-            cliente.email = fields[4].isEmpty() ? null : fields[4];
-            cliente.senha = fields[5].isEmpty() ? null : fields[5];
-            cliente.telefone = fields[6].isEmpty() ? null : fields[6];
-            cliente.endereco = fields[7].isEmpty() ? null : fields[7];
+        try {
+            if (fields.length >= 8) {
+                cliente.id = (fields[0] == null || fields[0].isEmpty()) ? null : Long.parseLong(fields[0]);
+                cliente.createdAt = (fields[1] == null || fields[1].isEmpty()) ? null : LocalDateTime.parse(fields[1], DATE_FORMATTER);
+                cliente.updatedAt = (fields[2] == null || fields[2].isEmpty()) ? null : LocalDateTime.parse(fields[2], DATE_FORMATTER);
+                cliente.nome = (fields[3] == null || fields[3].isEmpty()) ? null : fields[3];
+                cliente.email = (fields[4] == null || fields[4].isEmpty()) ? null : fields[4];
+                cliente.senha = (fields[5] == null || fields[5].isEmpty()) ? null : fields[5];
+                cliente.telefone = (fields[6] == null || fields[6].isEmpty()) ? null : fields[6];
+                cliente.endereco = (fields[7] == null || fields[7].isEmpty()) ? null : fields[7];
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao processar linha CSV: " + csvLine);
+            System.err.println("Erro: " + e.getMessage());
+            return null;
         }
 
         return cliente;
@@ -73,17 +83,26 @@ public class ClienteModel extends Model<ClienteModel> {
 
         List<ClienteModel> todos = findAll();
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFileName))) {
-            writer.write("id;createdAt;updatedAt;nome;email;senha;telefone;endereco");
-            writer.newLine();
+        try {
+            File file = new File(csvFileName);
 
-            for (ClienteModel cliente : todos) {
-                if (cliente.getId().equals(this.id)) {
-                    writer.write(this.toCsv());
-                } else {
-                    writer.write(cliente.toCsv());
-                }
+            File parentDir = file.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                writer.write("id;createdAt;updatedAt;nome;email;senha;telefone;endereco");
                 writer.newLine();
+
+                for (ClienteModel cliente : todos) {
+                    if (cliente.getId().equals(this.id)) {
+                        writer.write(this.toCsv());
+                    } else {
+                        writer.write(cliente.toCsv());
+                    }
+                    writer.newLine();
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException("Erro ao atualizar arquivo CSV: " + e.getMessage(), e);
@@ -93,14 +112,23 @@ public class ClienteModel extends Model<ClienteModel> {
     public void delete(Long id) {
         List<ClienteModel> todos = findAll();
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFileName))) {
-            writer.write("id;createdAt;updatedAt;nome;email;senha;telefone;endereco");
-            writer.newLine();
+        try {
+            File file = new File(csvFileName);
 
-            for (ClienteModel cliente : todos) {
-                if (!cliente.getId().equals(id)) {
-                    writer.write(cliente.toCsv());
-                    writer.newLine();
+            File parentDir = file.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                writer.write("id;createdAt;updatedAt;nome;email;senha;telefone;endereco");
+                writer.newLine();
+
+                for (ClienteModel cliente : todos) {
+                    if (!cliente.getId().equals(id)) {
+                        writer.write(cliente.toCsv());
+                        writer.newLine();
+                    }
                 }
             }
         } catch (IOException e) {

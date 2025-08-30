@@ -19,6 +19,12 @@ public abstract class Model<T> {
     public void save(T object) {
         try {
             File file = new File(csvFileName);
+
+            File parentDir = file.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+
             boolean isNewFile = !file.exists() || file.length() == 0;
 
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
@@ -41,6 +47,11 @@ public abstract class Model<T> {
     }
 
     public T findById(Long id) {
+        File file = new File(csvFileName);
+        if (!file.exists()) {
+            return null;
+        }
+
         try (BufferedReader reader = new BufferedReader(new FileReader(csvFileName))) {
             String line;
             reader.readLine();
@@ -59,6 +70,12 @@ public abstract class Model<T> {
 
     public List<T> findAll() {
         List<T> results = new ArrayList<>();
+        File file = new File(csvFileName);
+
+        if (!file.exists()) {
+            return results;
+        }
+
         try (BufferedReader reader = new BufferedReader(new FileReader(csvFileName))) {
             String line;
             reader.readLine();
@@ -84,7 +101,10 @@ public abstract class Model<T> {
 
         Field[] fields = this.getClass().getDeclaredFields();
         for (Field field : fields) {
-            headers.add(field.getName());
+            if (!java.lang.reflect.Modifier.isStatic(field.getModifiers()) &&
+                    !java.lang.reflect.Modifier.isFinal(field.getModifiers())) {
+                headers.add(field.getName());
+            }
         }
 
         return String.join(";", headers);
